@@ -33,22 +33,25 @@ jobs:
     - name: Run critical experiments (smoke test)
       run: |
         # Run with reduced sample sizes for CI speed
+        # Use direct file import to avoid torch dependency
         python -c "
         import sys
-        sys.path.insert(0, '.')
+        import os
+        import importlib.util
 
-        # Quick validation that experiments run
-        from assembly_net.experiments.critical_experiments import (
-            experiment_isomorphic_failure,
-            experiment_topology_vs_simple_stats,
-        )
+        # Import critical_experiments directly
+        exp_path = 'assembly_net/experiments/critical_experiments.py'
+        spec = importlib.util.spec_from_file_location('critical_experiments', exp_path)
+        exp_module = importlib.util.module_from_spec(spec)
+        sys.modules['critical_experiments'] = exp_module
+        spec.loader.exec_module(exp_module)
 
         # Smoke test with minimal samples
         print('Running smoke tests...')
-        result1 = experiment_isomorphic_failure(num_attempts=10, seed=42)
+        result1 = exp_module.experiment_isomorphic_failure(num_attempts=10, seed=42)
         print('Isomorphic test passed')
 
-        result2 = experiment_topology_vs_simple_stats(num_samples=20, seed=42)
+        result2 = exp_module.experiment_topology_vs_simple_stats(num_samples=20, seed=42)
         print('Topology vs simple stats test passed')
 
         print('All smoke tests passed!')
@@ -64,10 +67,40 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
     - name: Check Python syntax
       run: |
         python -m py_compile assembly_net/theory/definitions.py
         python -m py_compile assembly_net/data/validated_simulator.py
         python -m py_compile assembly_net/experiments/critical_experiments.py
+        python -m py_compile assembly_net/experiments/figure1_visual_demo.py
         python -m py_compile tests/test_simulator.py
         echo "Syntax check passed"
+
+    - name: Validate imports work
+      run: |
+        # Verify core modules can be imported without torch
+        python -c "
+        import sys
+        import importlib.util
+
+        # Test theory module
+        spec = importlib.util.spec_from_file_location('definitions', 'assembly_net/theory/definitions.py')
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules['definitions'] = mod
+        spec.loader.exec_module(mod)
+        print('✓ theory/definitions.py imports successfully')
+
+        # Test validated simulator
+        spec = importlib.util.spec_from_file_location('validated_simulator', 'assembly_net/data/validated_simulator.py')
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules['validated_simulator'] = mod
+        spec.loader.exec_module(mod)
+        print('✓ data/validated_simulator.py imports successfully')
+
+        print('All import checks passed!')
+        "
