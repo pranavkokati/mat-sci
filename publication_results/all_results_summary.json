@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-01-30T15:17:37.932326",
+  "total_runtime_seconds": 150.17736387252808,
+  "timings": {
+    "critical_experiments": 100.55843615531921,
+    "figure1": 47.9499294757843,
+    "unit_tests": 1.423072338104248
+  },
+  "errors": [],
+  "results_available": [
+    "critical_experiments",
+    "figure1",
+    "unit_tests"
+  ]
+}

@@ -1,0 +1,13 @@
+Assembly-Net Critical Experiments Log
+Started: 2026-01-30T15:15:07.752196
+Python: 3.11.14 (main, Oct 10 2025, 08:54:04) [GCC 13.3.0]
+
+Completed: 2026-01-30T15:17:37.931098
+Total runtime: 150.2 seconds
+
+Timings:
+  critical_experiments: 100.6s
+  figure1: 47.9s
+  unit_tests: 1.4s
+
+Status: SUCCESS
